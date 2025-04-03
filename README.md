@@ -84,3 +84,7 @@ yarn start
 ### Stopping the Server
 
 To stop either the development or production server, press `Ctrl+C` in the terminal where the server is running.
+
+## Pricing Endpoint
+
+Our dashboard fetches BTC/USD price data via Block's public pricing endpoint: `https://pricing.bitcoin.block.xyz/current-price`. This price data is refreshed every 60 seconds and is comprised of a volume weighted average of price data from many cryptocurrency exchanges.
