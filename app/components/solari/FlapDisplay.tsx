@@ -132,7 +132,7 @@ export const FlapDisplay = memo<FlapDisplayProps>(
     return (
       <div
         id={id}
-        className={`${containerClassName} flex relative w-full overflow-x-auto overflow-y-hidden justify-center gap-1`}
+        className={`${containerClassName} flex relative w-full overflow-hidden justify-center gap-1`}
         style={{
           ...css,
           transform: "perspective(1000px)",
