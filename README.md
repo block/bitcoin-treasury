@@ -17,7 +17,7 @@ This project is a **Next.js** application. Follow the instructions below to run 
 
    ```bash
    git clone <repository-url>
-   cd block-bitcoin-treasury
+   cd bitcoin-treasury
    ```
 
 2. Install dependencies:
