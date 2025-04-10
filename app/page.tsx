@@ -1,8 +1,9 @@
 "use client";
 
 import { SolariBoard } from "./components/solari/SolariBoard";
-import { useState, useEffect, useMemo, useRef, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useBitcoinPrice } from "./hooks/useBitcoinPrice";
 // import { useDisplayLength } from "./components/useDisplayLength";
 
 function formatCurrency(number: number, locale = "en-US", currency = "USD") {
@@ -26,6 +27,7 @@ const getLoadingRows = (displayLength: number) => [
   { value: "", length: displayLength },
   { value: "", length: displayLength },
   { value: "", length: displayLength },
+  { value: "", length: displayLength },
 ];
 
 function HomeContent() {
@@ -34,17 +36,31 @@ function HomeContent() {
   // const displayLength = useDisplayLength();
   const displayLength = 20; // Fallback to a fixed length for simplicity
 
-  const [bitcoinPrice, setBitcoinPrice] = useState(0);
-  const previousPriceRef = useRef(0);
-  const [priceDirection, setPriceDirection] = useState<string | null>(null);
-  const [holding] = useState(8485);
+  // Use the custom hook for price data
+  const { bitcoinPrice, priceDirection, error, countdown, isFetching } =
+    useBitcoinPrice();
+
+  // Get holding from URL, default to 40
+  const getHoldingFromParams = () => {
+    const holdingParam = searchParams.get("holding");
+    if (holdingParam) {
+      const parsedHolding = parseFloat(holdingParam);
+      // Validate if it's a positive number
+      if (!isNaN(parsedHolding) && parsedHolding > 0) {
+        return parsedHolding;
+      }
+      // Optionally: set an error or redirect if invalid?
+      // For now, just default back.
+    }
+    return 8485; // Default value
+  };
+
+  const [holding, setHolding] = useState(getHoldingFromParams);
   const [holdingValue, setHoldingValue] = useState(0);
   const [currentRowIndex, setCurrentRowIndex] = useState(-1);
   const [ticker, setTicker] = useState(searchParams.get("ticker") || "XYZ");
-  const [inputError, setInputError] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(20);
-  const [isFetching, setIsFetching] = useState(false);
+  // Removed inputError as it wasn't used
+  // Removed explicit error, countdown, isFetching states - now handled by hook
 
   // Initialize loading rows immediately
   const loadingBoardRows = useMemo(
@@ -57,14 +73,18 @@ function HomeContent() {
     setHoldingValue(bitcoinPrice * holding);
   }, [bitcoinPrice, holding]);
 
+  // Update holding if URL param changes
+  useEffect(() => {
+    setHolding(getHoldingFromParams());
+  }, [searchParams]); // Re-run when searchParams change
+
   // Format the display values
   const displayValue = error
-    ? "Error"
-    : `${formatCurrency(bitcoinPrice).toString()}${
-        priceDirection ? ` ${priceDirection}` : ""
-      }`;
+    ? error // Display the error message from the hook
+    : `${formatCurrency(bitcoinPrice).toString()}${priceDirection ? ` ${priceDirection}` : ""}`;
 
   const holdingDisplay = error ? "Error" : formatCurrency(holdingValue);
+  const holdingDisplayBTC = error ? "Error" : `${holding} BTC`;
 
   // Define the final board rows
   const finalBoardRows = useMemo(
@@ -72,14 +92,15 @@ function HomeContent() {
       { value: "", length: displayLength },
       { value: ` ${ticker}`, length: displayLength },
       { value: "", length: displayLength },
-      { value: " TOTAL HOLDING", length: displayLength },
+      { value: ` ${holdingDisplayBTC}`, length: displayLength, color: "#FFA500" },
+      { value: " TOTAL HOLDING USD", length: displayLength },
       { value: ` ${holdingDisplay}`, length: displayLength },
       { value: "", length: displayLength },
       { value: " BTC PRICE", length: displayLength },
       { value: ` ${displayValue}`, length: displayLength },
       { value: "", length: displayLength },
     ],
-    [ticker, holdingDisplay, displayValue, displayLength]
+    [ticker, holdingDisplay, holdingDisplayBTC, displayValue, displayLength]
   );
 
   // Current board rows based on loading state and animation progress
@@ -98,7 +119,8 @@ function HomeContent() {
 
   // Handle the row-by-row animation
   useEffect(() => {
-    if (!isFetching && currentRowIndex === -1) {
+    // Start animation only when initial fetch is done AND no error
+    if (!isFetching && currentRowIndex === -1 && !error) {
       // Start the row animation after data is loaded
       const animateRows = () => {
         const interval = setInterval(() => {
@@ -117,80 +139,13 @@ function HomeContent() {
       // Small delay before starting the animation
       setTimeout(animateRows, 1000);
     }
-  }, [isFetching, currentRowIndex, finalBoardRows.length]);
-
-  // Fetch Bitcoin price and manage countdown
-  useEffect(() => {
-    const fetchBitcoinPrice = async () => {
-      setIsFetching(true);
-      try {
-        const response = await fetch(
-          "https://pricing.bitcoin.block.xyz/current-price"
-        );
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const newPrice = parseFloat(data["amount"]);
-
-        // Check if this is not the first fetch
-        if (!isFetching) {
-          // Compare with previous price to determine direction
-          if (newPrice > previousPriceRef.current) {
-            setPriceDirection("↑");
-          } else if (newPrice < previousPriceRef.current) {
-            setPriceDirection("↓");
-          } else {
-            setPriceDirection(null);
-          }
-
-          // Remove the direction indicator after 5 seconds (increased from 2 seconds)
-          if (newPrice !== previousPriceRef.current) {
-            setTimeout(() => {
-              setPriceDirection(null);
-            }, 2000);
-          }
-        } else {
-          // Set initial price without showing direction
-          setPriceDirection(null);
-        }
-
-        // Update prices
-        const oldPrice = previousPriceRef.current;
-        previousPriceRef.current = newPrice;
-        setBitcoinPrice(newPrice);
-      } catch (err) {
-        console.error("Failed to fetch Bitcoin price:", err);
-        setError("Failed to fetch Bitcoin price");
-      }
-      setIsFetching(false);
-      setCountdown(20);
-    };
-
-    // Fetch immediately on load
-    fetchBitcoinPrice();
-
-    // Set up countdown interval
-    const countdownInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          fetchBitcoinPrice(); // Fetch when countdown reaches 0
-          return 20; // Reset to 20 seconds
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    // Clean up intervals on component unmount
-    return () => {
-      clearInterval(countdownInterval);
-    };
-  }, []);
+  }, [isFetching, currentRowIndex, finalBoardRows.length, error]); // Added error dependency
 
   return (
     <div className="w-full h-full font-mono flex flex-col justify-center items-center">
+      {/* Input field for holding - Optional feature */}
+      {/* Consider adding an input field here if direct editing is desired */}
+
       <div className="relative p-4 rounded-lg bg-[#0e0d0d]">
         <SolariBoard rows={currentBoardRows} className="relative" />
       </div>
