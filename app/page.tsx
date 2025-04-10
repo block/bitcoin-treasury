@@ -26,6 +26,7 @@ const getLoadingRows = (displayLength: number) => [
   { value: "", length: displayLength },
   { value: "", length: displayLength },
   { value: "", length: displayLength },
+  { value: "", length: displayLength },
 ];
 
 function HomeContent() {
@@ -73,13 +74,14 @@ function HomeContent() {
       { value: ` ${ticker}`, length: displayLength },
       { value: "", length: displayLength },
       { value: " TOTAL HOLDING", length: displayLength },
+      { value: ` BTC ${holding}`, length: displayLength },
       { value: ` ${holdingDisplay}`, length: displayLength },
       { value: "", length: displayLength },
       { value: " BTC PRICE", length: displayLength },
       { value: ` ${displayValue}`, length: displayLength },
       { value: "", length: displayLength },
     ],
-    [ticker, holdingDisplay, displayValue, displayLength]
+    [ticker, holdingDisplay, holding, displayValue, displayLength]
   );
 
   // Current board rows based on loading state and animation progress
