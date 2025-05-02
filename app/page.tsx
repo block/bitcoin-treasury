@@ -128,7 +128,8 @@ function HomeContent() {
       setIsFetching(true);
       try {
         const response = await fetch(
-          "https://pricing.bitcoin.block.xyz/current-price"
+          "https://pricing.bitcoin.block.xyz/current-price",
+          { cache: "no-store" }
         );
 
         if (!response.ok) {
