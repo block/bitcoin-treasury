@@ -38,7 +38,7 @@ function HomeContent() {
   const [bitcoinPrice, setBitcoinPrice] = useState(0);
   const previousPriceRef = useRef(0);
   const [priceDirection, setPriceDirection] = useState<string | null>(null);
-  const [holding] = useState(8485);
+  const [holding] = useState(8584);
   const [holdingValue, setHoldingValue] = useState(0);
   const [currentRowIndex, setCurrentRowIndex] = useState(-1);
   const [ticker, setTicker] = useState(searchParams.get("ticker") || "XYZ");
