@@ -33,13 +33,18 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   // const displayLength = useDisplayLength();
-  const displayLength = 20; // Fallback to a fixed length for simplicity
-
   const [bitcoinPrice, setBitcoinPrice] = useState(0);
   const previousPriceRef = useRef(0);
   const [priceDirection, setPriceDirection] = useState<string | null>(null);
   const [holding] = useState(8584);
   const [holdingValue, setHoldingValue] = useState(0);
+  
+  // Calculate display length based on holding value
+  const getDisplayLength = (holdingValue: number) => {
+    return holdingValue >= 1000000000 ? 22 : 20; // 22 for 1B+, 20 for under
+  };
+  
+  const displayLength = getDisplayLength(holdingValue);
   const [currentRowIndex, setCurrentRowIndex] = useState(-1);
   const [ticker, setTicker] = useState(searchParams.get("ticker") || "XYZ");
   const [inputError, setInputError] = useState<string | null>(null);
