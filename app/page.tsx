@@ -36,7 +36,7 @@ function HomeContent() {
   const [bitcoinPrice, setBitcoinPrice] = useState(0);
   const previousPriceRef = useRef(0);
   const [priceDirection, setPriceDirection] = useState<string | null>(null);
-  const [holding] = useState(8584);
+  const [holding] = useState(8692);
   const [holdingValue, setHoldingValue] = useState(0);
   
   // Calculate display length based on holding value
