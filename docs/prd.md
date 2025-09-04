@@ -93,43 +93,43 @@ The main deliverable is a unified web application that extends the existing [Bit
 ### Phase 1: UI/UX with Mocked Data
 ```mermaid
 flowchart LR
-    subgraph "Single Web Application (Bitcoin Treasury Fork)"
-        PUB[Public Dashboard\n(Enhanced)]
-        TM[Treasury Manager Portal\n(New Admin Section)]
-        VER[In-Browser Verifier\n(Mocked)]
-        MOCK[(Mock Data Store\nFake proofs + amounts)]
+    subgraph APP["Single Web Application - Bitcoin Treasury Fork"]
+        PUB["Public Dashboard<br/>(Enhanced)"]
+        TM["Treasury Manager Portal<br/>(New Admin Section)"]
+        VER["In-Browser Verifier<br/>(Mocked)"]
+        MOCK[("Mock Data Store<br/>Fake proofs + amounts")]
     end
 
-    TM -- Generate Proof\n(mocked flow) --> MOCK
-    MOCK -. provides mocked proof & sum .-> PUB
-    PUB -- "Verify Proof" --> VER
-    VER -- mock verification --> VER
-    VER -- shows ✅ (always pass) --> PUB
+    TM -->|"Generate Proof<br/>(mocked flow)"| MOCK
+    MOCK -.->|"provides mocked proof & sum"| PUB
+    PUB -->|"Verify Proof"| VER
+    VER -->|"mock verification"| VER
+    VER -->|"shows ✅ (always pass)"| PUB
 ```
 
 ### Future Architecture: Full Implementation
 ```mermaid
 flowchart LR
-    subgraph "Bitcoin Treasury Fork (Extended)"
-        PUB[Public Dashboard]
-        TM[Treasury Manager Portal]
-        VER[In-Browser Verifier]
+    subgraph APP["Bitcoin Treasury Fork - Extended"]
+        PUB["Public Dashboard"]
+        TM["Treasury Manager Portal"]
+        VER["In-Browser Verifier"]
     end
     
-    BE[Proof Generation Backend\n(API + job runner)]
-    CP[Cairo Program / Prover\n(STARK circuit)]
-    ART[(Proof Artifact Store\nπ + public sum)]
+    BE["Proof Generation Backend<br/>(API + job runner)"]
+    CP["Cairo Program / Prover<br/>(STARK circuit)"]
+    ART[("Proof Artifact Store<br/>π + public sum")]
 
-    TM -- POST /api/prove\nlist of UTXOs + ownership proofs --> BE
-    BE -- invoke --> CP
-    CP -- returns π (proof) + public_sum --> BE
-    BE -- persist --> ART
-    BE -- response --> TM
-    ART -. provides proof & sum .-> PUB
-    PUB -- "Verify Proof" --> VER
-    VER -- fetch π + public_sum --> ART
-    VER -- verify(π, public_sum) --> VER
-    VER -- shows ✅/❌ --> PUB
+    TM -->|"POST /api/prove<br/>list of UTXOs + ownership proofs"| BE
+    BE -->|"invoke"| CP
+    CP -->|"returns π (proof) + public_sum"| BE
+    BE -->|"persist"| ART
+    BE -->|"response"| TM
+    ART -.->|"provides proof & sum"| PUB
+    PUB -->|"Verify Proof"| VER
+    VER -->|"fetch π + public_sum"| ART
+    VER -->|"verify(π, public_sum)"| VER
+    VER -->|"shows ✅/❌"| PUB
 ```
 
 ## 4. Implementation Plan
