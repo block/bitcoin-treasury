@@ -1,0 +1,16 @@
+[package]
+name = "zkpoor"
+version = "0.1.0"
+edition = "2024_07"
+
+[executable]
+allow-syscalls = true
+
+[dependencies]
+cairo_execute = "2.11.4"
+consensus = { git = "https://github.com/starkware-bitcoin/raito", rev = "e3ed7ee2e1011aa63350da63b8523097b9d8f3d8" }
+utils = { git = "https://github.com/starkware-bitcoin/raito", rev = "e3ed7ee2e1011aa63350da63b8523097b9d8f3d8" }
+stwo_cairo_air = { git = "https://github.com/starkware-libs/stwo-cairo", rev = "bbe3e469bc636b89c37cb385854447bd46277b3b", features = ["minimal_verifier", "qm31_opcode"] }
+
+[cairo]
+enable-gas = false
